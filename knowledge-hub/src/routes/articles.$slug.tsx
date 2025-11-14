@@ -35,8 +35,14 @@ async function getArticleBySlug(slug: string): Promise<Article | null> {
       title: article.title,
       hasContent: !!article.content,
       contentLength: article.content ? article.content.length : 0,
-      content: article.content,
+      contentType: typeof article.content,
+      isArray: Array.isArray(article.content),
     })
+
+    // Log detailed content structure
+    if (article.content && Array.isArray(article.content)) {
+      console.log('Content blocks:', JSON.stringify(article.content, null, 2))
+    }
 
     return article
   } catch (error) {
@@ -60,6 +66,46 @@ export const Route = createFileRoute('/articles/$slug')({
   pendingComponent: LoadingComponent,
   notFoundComponent: NotFoundComponent,
 })
+
+// Simple custom renderer for debugging
+function SimpleContentRenderer({ content }: { content: any[] }) {
+  if (!content || !Array.isArray(content)) {
+    return <p>Invalid content structure</p>
+  }
+
+  return (
+    <div className="simple-content">
+      {content.map((block, index) => {
+        if (block.type === 'paragraph' && block.children) {
+          return (
+            <p key={index} className="mb-4">
+              {block.children.map((child: any, childIndex: number) => {
+                if (child.type === 'text') {
+                  return <span key={childIndex}>{child.text}</span>
+                }
+                return null
+              })}
+            </p>
+          )
+        }
+        if (block.type === 'heading' && block.children) {
+          const HeadingTag = `h${block.level || 2}` as keyof JSX.IntrinsicElements
+          return (
+            <HeadingTag key={index} className="font-bold mb-4">
+              {block.children.map((child: any, childIndex: number) => {
+                if (child.type === 'text') {
+                  return <span key={childIndex}>{child.text}</span>
+                }
+                return null
+              })}
+            </HeadingTag>
+          )
+        }
+        return null
+      })}
+    </div>
+  )
+}
 
 function ArticlePage() {
   const { article } = Route.useLoaderData()
@@ -117,7 +163,27 @@ function ArticlePage() {
           {/* Article Content with Prose Styling */}
           <div className="prose prose-invert prose-lg prose-cyan max-w-none">
             {article.content && article.content.length > 0 ? (
-              <BlocksRenderer content={article.content} />
+              <>
+                <div className="mb-4 p-2 bg-blue-900/20 border border-blue-500/50 rounded text-xs text-blue-300">
+                  Debug: Rendering {article.content.length} content blocks
+                </div>
+
+                {/* Custom Simple Renderer */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-2">
+                    Simple Renderer (Fallback):
+                  </h3>
+                  <SimpleContentRenderer content={article.content} />
+                </div>
+
+                {/* Strapi BlocksRenderer */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-cyan-400 mb-2">
+                    BlocksRenderer:
+                  </h3>
+                  <BlocksRenderer content={article.content} />
+                </div>
+              </>
             ) : (
               <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6 text-center">
                 <p className="text-yellow-400 text-lg font-medium mb-2">

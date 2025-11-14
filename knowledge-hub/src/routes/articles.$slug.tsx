@@ -8,7 +8,7 @@ const STRAPI_BASE_URL = 'http://localhost:1337/api'
 async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const response = await fetch(
-      `${STRAPI_BASE_URL}/articles?filters[slug][$eq]=${slug}&populate=category`,
+      `${STRAPI_BASE_URL}/articles?filters[slug][$eq]=${slug}&populate=*`,
       {
         headers: {
           'Content-Type': 'application/json',

@@ -26,7 +26,19 @@ async function getArticleBySlug(slug: string): Promise<Article | null> {
       return null
     }
 
-    return data.data[0]
+    const article = data.data[0]
+
+    // Debug logging to check if content is being fetched
+    console.log('Article fetched:', {
+      id: article.id,
+      slug: article.slug,
+      title: article.title,
+      hasContent: !!article.content,
+      contentLength: article.content ? article.content.length : 0,
+      content: article.content,
+    })
+
+    return article
   } catch (error) {
     console.error('Error fetching article:', error)
     throw error
@@ -104,7 +116,19 @@ function ArticlePage() {
 
           {/* Article Content with Prose Styling */}
           <div className="prose prose-invert prose-lg prose-cyan max-w-none">
-            <BlocksRenderer content={article.content} />
+            {article.content && article.content.length > 0 ? (
+              <BlocksRenderer content={article.content} />
+            ) : (
+              <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6 text-center">
+                <p className="text-yellow-400 text-lg font-medium mb-2">
+                  No content available
+                </p>
+                <p className="text-gray-400 text-sm">
+                  This article doesn't have any content yet. Please add content
+                  in Strapi CMS.
+                </p>
+              </div>
+            )}
           </div>
         </article>
 

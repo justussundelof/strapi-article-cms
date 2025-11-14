@@ -35,8 +35,14 @@ async function getArticleBySlug(slug: string): Promise<Article | null> {
       title: article.title,
       hasContent: !!article.content,
       contentLength: article.content ? article.content.length : 0,
-      content: article.content,
+      contentType: typeof article.content,
+      isArray: Array.isArray(article.content),
     })
+
+    // Log detailed content structure
+    if (article.content && Array.isArray(article.content)) {
+      console.log('Content blocks:', JSON.stringify(article.content, null, 2))
+    }
 
     return article
   } catch (error) {
@@ -117,7 +123,12 @@ function ArticlePage() {
           {/* Article Content with Prose Styling */}
           <div className="prose prose-invert prose-lg prose-cyan max-w-none">
             {article.content && article.content.length > 0 ? (
-              <BlocksRenderer content={article.content} />
+              <>
+                <div className="mb-4 p-2 bg-blue-900/20 border border-blue-500/50 rounded text-xs text-blue-300">
+                  Debug: Rendering {article.content.length} content blocks
+                </div>
+                <BlocksRenderer content={article.content} />
+              </>
             ) : (
               <div className="bg-yellow-900/20 border border-yellow-500/50 rounded-lg p-6 text-center">
                 <p className="text-yellow-400 text-lg font-medium mb-2">
